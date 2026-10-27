@@ -6,6 +6,12 @@ GRID_SIZE = 28
 COLS = BOARD_SIZE // GRID_SIZE
 ROWS = BOARD_SIZE // GRID_SIZE
 INITIAL_SPEED = 170
+BACKGROUND = "#0f172a"
+SURFACE = "#172033"
+BOARD_BACKGROUND = "#0b1220"
+GRID_LIGHT = "#111b2e"
+GRID_DARK = "#0e1829"
+ACCENT = "#a3e635"
 
 
 class Snake:
@@ -59,14 +65,14 @@ class Snake:
     def draw(self):
         self.canvas.delete("snake")
         for index, (x, y) in enumerate(self.body):
-            color = "#a3e635" if index == 0 else "#65a30d"
+            color = ACCENT if index == 0 else "#65a30d"
             x1 = x * GRID_SIZE
             y1 = y * GRID_SIZE
             self.canvas.create_rectangle(
-                x1 + 1,
-                y1 + 1,
-                x1 + GRID_SIZE - 1,
-                y1 + GRID_SIZE - 1,
+                x1 + 3,
+                y1 + 3,
+                x1 + GRID_SIZE - 3,
+                y1 + GRID_SIZE - 3,
                 fill=color,
                 outline=color,
                 tags="snake",
@@ -94,12 +100,12 @@ class Food:
         x1 = x * GRID_SIZE
         y1 = y * GRID_SIZE
         self.canvas.create_rectangle(
-            x1 + 3,
-            y1 + 3,
-            x1 + GRID_SIZE - 3,
-            y1 + GRID_SIZE - 3,
+            x1 + 5,
+            y1 + 5,
+            x1 + GRID_SIZE - 5,
+            y1 + GRID_SIZE - 5,
             fill="#ef4444",
-            outline="#b91c1c",
+            outline="#ef4444",
             tags="food",
         )
 
@@ -107,14 +113,85 @@ class Food:
 class SnakeGame:
     def __init__(self, root):
         self.root = root
-        self.root.title("Snake OOP")
+        self.root.title("Cobrinha")
         self.root.resizable(False, False)
+        self.root.configure(bg=BACKGROUND)
 
-        self.canvas = tk.Canvas(root, width=BOARD_SIZE, height=BOARD_SIZE, bg="#0b1120", highlightthickness=0)
+        self.content = tk.Frame(root, bg=BACKGROUND)
+        self.content.pack(padx=24, pady=22)
+
+        tk.Label(
+            self.content,
+            text="COBRINHA",
+            font=("Segoe UI", 20, "bold"),
+            bg=BACKGROUND,
+            fg="#f8fafc",
+        ).pack(anchor="w")
+        tk.Label(
+            self.content,
+            text="Coma, cresça e não bata.",
+            font=("Segoe UI", 10),
+            bg=BACKGROUND,
+            fg="#94a3b8",
+        ).pack(anchor="w", pady=(2, 16))
+
+        score_panel = tk.Frame(self.content, bg=SURFACE)
+        score_panel.pack(fill="x", pady=(0, 12))
+
+        score_current = tk.Frame(score_panel, bg=SURFACE)
+        score_current.pack(side="left", padx=14, pady=10)
+        tk.Label(
+            score_current,
+            text="PONTUAÇÃO",
+            font=("Segoe UI", 8, "bold"),
+            bg=SURFACE,
+            fg="#94a3b8",
+        ).pack(anchor="w")
+        self.score_label = tk.Label(
+            score_current,
+            text="0",
+            font=("Segoe UI", 16, "bold"),
+            bg=SURFACE,
+            fg=ACCENT,
+        )
+        self.score_label.pack(anchor="w")
+
+        best_score_panel = tk.Frame(score_panel, bg=SURFACE)
+        best_score_panel.pack(side="right", padx=14, pady=10)
+        tk.Label(
+            best_score_panel,
+            text="RECORDE",
+            font=("Segoe UI", 8, "bold"),
+            bg=SURFACE,
+            fg="#94a3b8",
+        ).pack(anchor="e")
+        self.best_score_label = tk.Label(
+            best_score_panel,
+            text="0",
+            font=("Segoe UI", 16, "bold"),
+            bg=SURFACE,
+            fg="#f8fafc",
+        )
+        self.best_score_label.pack(anchor="e")
+
+        board_frame = tk.Frame(self.content, bg="#263449", padx=5, pady=5)
+        board_frame.pack()
+        self.canvas = tk.Canvas(
+            board_frame,
+            width=BOARD_SIZE,
+            height=BOARD_SIZE,
+            bg=BOARD_BACKGROUND,
+            highlightthickness=0,
+        )
         self.canvas.pack()
 
-        self.score_label = tk.Label(root, text="Pontuação: 0", font=("Arial", 16, "bold"), bg="#111827", fg="white")
-        self.score_label.pack(pady=(8, 0))
+        tk.Label(
+            self.content,
+            text="SETAS ou W A S D   ·   ESPAÇO para jogar novamente",
+            font=("Segoe UI", 8, "bold"),
+            bg=BACKGROUND,
+            fg="#64748b",
+        ).pack(pady=(14, 0))
 
         self.score = 0
         self.best_score = 0
@@ -151,20 +228,20 @@ class SnakeGame:
         self.after_id = self.root.after(INITIAL_SPEED, self.game_loop)
 
     def update_score(self):
-        self.score_label.config(text=f"Pontuação: {self.score}")
+        self.score_label.config(text=str(self.score))
+        self.best_score_label.config(text=str(max(self.best_score, self.score)))
 
     def draw_board(self):
         self.canvas.delete("all")
-        for x in range(0, BOARD_SIZE, GRID_SIZE):
-            for y in range(0, BOARD_SIZE, GRID_SIZE):
+        for row, y in enumerate(range(0, BOARD_SIZE, GRID_SIZE)):
+            for column, x in enumerate(range(0, BOARD_SIZE, GRID_SIZE)):
                 self.canvas.create_rectangle(
                     x,
                     y,
                     x + GRID_SIZE,
                     y + GRID_SIZE,
-                    outline="#94a3b8",
-                    fill="#0b1120",
-                    width=1,
+                    outline="",
+                    fill=GRID_LIGHT if (row + column) % 2 == 0 else GRID_DARK,
                 )
 
         self.snake.draw()
@@ -173,35 +250,41 @@ class SnakeGame:
     def end_game(self):
         self.running = False
         self.best_score = max(self.best_score, self.score)
+        self.update_score()
         self.canvas.create_text(
             BOARD_SIZE / 2,
             BOARD_SIZE / 2 - 30,
             text="Fim de jogo",
-            fill="white",
-            font=("Arial", 22, "bold"),
+            fill="#f8fafc",
+            font=("Segoe UI", 22, "bold"),
             tags="game_over",
         )
         self.canvas.create_text(
             BOARD_SIZE / 2,
             BOARD_SIZE / 2,
             text=f"Pontuação: {self.score}",
-            fill="white",
-            font=("Arial", 16),
+            fill="#cbd5e1",
+            font=("Segoe UI", 12),
             tags="game_over",
         )
 
         if self.restart_button is None:
             self.restart_button = tk.Button(
-                self.root,
-                text="Jogar novamente",
+                self.content,
+                text="JOGAR NOVAMENTE",
                 command=self.reset_game,
-                bg="#a3e635",
-                fg="#0b1120",
-                font=("Arial", 12, "bold"),
-                padx=18,
-                pady=8,
+                bg=ACCENT,
+                fg="#1a2e05",
+                activebackground="#bef264",
+                activeforeground="#1a2e05",
+                font=("Segoe UI", 10, "bold"),
+                padx=16,
+                pady=9,
+                relief="flat",
+                borderwidth=0,
+                cursor="hand2",
             )
-            self.restart_button.pack(pady=(8, 0))
+            self.restart_button.pack(pady=(12, 0), fill="x")
 
     def check_food(self):
         if self.snake.head() == self.food.position:
@@ -244,6 +327,10 @@ class SnakeGame:
 
     def on_key_press(self, event):
         key = event.keysym.lower()
+
+        if key == "space" and not self.running:
+            self.reset_game()
+            return
 
         if key == "up" or key == "w":
             self.snake.set_direction((0, -1))
