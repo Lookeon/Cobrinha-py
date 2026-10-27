@@ -1,7 +1,7 @@
 
 # Snake OOP
 <p align="center">
-  <img width="417" alt="Snake OOP" src="https://github.com/user-attachments/assets/354917cc-92ba-4bed-a3c1-5344846351cd" />
+  <img width="331" height="533" alt="image" src="https://github.com/user-attachments/assets/bd982edf-99c5-4af5-8b1f-7e695c8dd554" />
 </p>
 Jogo da cobrinha (Snake) feito em Python com Tkinter, usando Programação Orientada a Objetos. Projeto de estudo para praticar classes, lógica de jogo e interface gráfica.
 
